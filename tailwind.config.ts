@@ -48,6 +48,9 @@ const config: Config = {
       },
 
       colors: {
+        error: {
+          DEFAULT: "#ff5e47",
+        },
         primary: {
           "50": "#f0f9ff",
           "100": "#e0f2fe",
