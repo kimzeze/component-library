@@ -31,5 +31,7 @@
       BlinkMacSystemFont,
       system-ui,
       sans-serif;
+    color: #222222;
+    line-height: 1.5;
   }
 }
