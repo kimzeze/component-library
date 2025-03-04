@@ -16,6 +16,11 @@
   border: 0;
 }
 
+:root {
+  /* 다크모드 무시 */
+  color-scheme: only light;
+}
+
 @layer base {
   html {
     font-size: 62.5%;
