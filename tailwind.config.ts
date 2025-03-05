@@ -35,6 +35,8 @@ const config: Config = {
         xxxl: "2.8rem",
         xxxxl: "3.2rem",
         xxxxxl: "4.0rem",
+        xxxxxxl: "5.0rem",
+        xxxxxxxl: "6.0rem",
       },
 
       borderRadius: {
