@@ -27,3 +27,4 @@ alwaysApply: false
 # perf: 성능 개선
 # build: 빌드 시스템이나 외부 종속성 변경
 # ci: CI 설정 파일 및 스크립트 변경
+# asset: 아이콘 등 자료 추가
