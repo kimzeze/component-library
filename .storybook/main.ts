@@ -17,5 +17,20 @@ const config: StorybookConfig = {
   refs: {
     "configure-your-project": { disable: true },
   },
+  // Vite 최적화 설정 추가
+  viteFinal: (config) => {
+    if (config.optimizeDeps) {
+      config.optimizeDeps.exclude = [
+        ...(config.optimizeDeps.exclude || []),
+        "@storybook/blocks",
+        "@storybook/addon-docs",
+      ];
+    } else {
+      config.optimizeDeps = {
+        exclude: ["@storybook/blocks", "@storybook/addon-docs"],
+      };
+    }
+    return config;
+  },
 };
 export default config;
