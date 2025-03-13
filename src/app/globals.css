@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 웹 접근성 */
 .a11y-hidden {
   position: absolute;
   width: 1px;
@@ -21,6 +22,9 @@
   color-scheme: only light;
 }
 
+/* 
+1rem = 10px
+*/
 @layer base {
   html {
     font-size: 62.5%;
@@ -36,6 +40,7 @@
   }
 }
 
+/* 애니메이션 */
 @keyframes fadeInDown {
   from {
     opacity: 0;
