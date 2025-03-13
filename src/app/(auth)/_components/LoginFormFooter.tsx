@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-interface AuthFooterProps {
+interface LoginFormFooterProps {
   links?: Array<{
     href: string;
     label: string;
@@ -9,14 +9,14 @@ interface AuthFooterProps {
   companyName?: string;
 }
 
-const AuthFooter = ({
+const LoginFormFooter = ({
   links = [
     { href: "#", label: "카카오톡 상담하기" },
     { href: "#", label: "고객센터 안내" },
   ],
-}: AuthFooterProps) => {
+}: LoginFormFooterProps) => {
   return (
-    <footer className="flex justify-center border text-sm text-gray-500">
+    <footer className="flex justify-center text-sm text-gray-500">
       {links.map((link, index) => (
         <div key={index} className="flex items-center">
           <Link href={link.href} className="hover:text-gray-700">
@@ -30,4 +30,4 @@ const AuthFooter = ({
   );
 };
 
-export default AuthFooter;
+export default LoginFormFooter;
