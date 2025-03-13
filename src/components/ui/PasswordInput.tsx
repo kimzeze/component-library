@@ -1,6 +1,5 @@
-import { InputHTMLAttributes, forwardRef, useState } from "react";
+import { InputHTMLAttributes, forwardRef, useEffect, useState } from "react";
 
-import { useErrorState, useInputControl } from "@/lib/hooks";
 import cn from "@/lib/utils/cn";
 
 // 아이콘 컴포넌트를 인라인으로 정의합니다
@@ -49,8 +48,6 @@ export interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement
   showClearButton?: boolean;
   /** 클리어 버튼 클릭 시 호출될 콜백 */
   onClear?: () => void;
-  /** 오류 초기화 시 호출될 콜백 */
-  onErrorClear?: () => void;
   /** 레이아웃 방향 */
   direction?: "row" | "column";
 }
@@ -58,24 +55,15 @@ export interface PasswordInputProps extends InputHTMLAttributes<HTMLInputElement
 /**
  * 비밀번호 입력에 특화된 컴포넌트
  *
- * 기본 Input 컴포넌트의 기능을 확장하여 비밀번호 입력에 최적화되었습니다.
+ * react-hook-form의 register 함수와 호환되도록 설계되었습니다.
  * - 기본적으로 마스킹된 입력 필드 제공
  * - 비밀번호 표시/숨김 토글 버튼
  * - 클리어 버튼 제공
  * - 접근성 고려 설계
  *
  * @example
- * // 기본 사용법
- * <PasswordInput placeholder="비밀번호를 입력하세요" />
- *
- * @example
- * // 유효성 검사와 함께 사용
- * <PasswordInput
- *   value={password}
- *   onChange={handleChange}
- *   error={passwordError}
- *   required
- * />
+ * // react-hook-form과 함께 사용
+ * <PasswordInput {...register("password")} error={errors.password?.message} />
  */
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   (
@@ -87,9 +75,11 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       error,
       showClearButton = true,
       onClear,
-      onErrorClear,
       direction = "column",
       "aria-describedby": ariaDescribedby,
+      value,
+      onChange,
+      defaultValue,
       ...props
     },
     ref,
@@ -103,41 +93,51 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
     // 비밀번호 표시 상태
     const [showPassword, setShowPassword] = useState(false);
 
-    // 입력값 관리
-    const input = useInputControl(props);
+    // 로컬 상태로 입력값 트래킹
+    const [hasInputValue, setHasInputValue] = useState(Boolean(value || defaultValue));
 
-    // 에러 상태 관리
-    const errorState = useErrorState(error, onErrorClear);
+    // 입력 변경 감지
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setHasInputValue(!!e.target.value);
+      if (onChange) {
+        onChange(e);
+      }
+    };
+
+    // value prop이 변경될 때마다 hasInputValue 업데이트
+    useEffect(() => {
+      setHasInputValue(Boolean(value));
+    }, [value]);
 
     // 클리어 버튼 표시 여부
-    const showClear = showClearButton && input.hasValue && !props.disabled;
+    const showClear = showClearButton && hasInputValue && !props.disabled;
 
     // 비밀번호 표시/숨김 토글 핸들러
     const togglePasswordVisibility = () => {
       setShowPassword(!showPassword);
     };
 
-    // 입력 핸들러
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      input.handleChange(e);
-    };
-
     // 초기화 핸들러
     const handleClear = () => {
-      input.handleClear();
-      errorState.clearError();
-
-      // 포커스 처리
-      const inputElement = ref as React.RefObject<HTMLInputElement>;
-      if (inputElement && inputElement.current) {
-        inputElement.current.focus();
+      if (onClear) {
+        onClear();
+      } else if (onChange) {
+        // 합성 이벤트 생성 및 발생
+        const syntheticEvent = {
+          target: { value: "" },
+          currentTarget: { value: "" },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
       }
+
+      // 로컬 상태 업데이트
+      setHasInputValue(false);
     };
 
     // ARIA describedby 설정
     const getAriaDescribedby = () => {
       const ids: string[] = [];
-      if (errorState.error) ids.push(errorId);
+      if (error) ids.push(errorId);
       if (ariaDescribedby) ids.push(ariaDescribedby);
       return ids.length > 0 ? ids.join(" ") : undefined;
     };
@@ -180,18 +180,19 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               type={showPassword ? "text" : "password"}
               className={cn(
                 "duration-250 w-full rounded-2xs border py-xs pl-xs pr-[70px] text-md transition-[border-color]",
-                errorState.error ? "border-error" : "border-gray-100",
+                error ? "border-error" : "border-gray-100",
                 props.disabled
                   ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
                   : "bg-white",
                 "focus:outline-none",
-                errorState.error ? "focus:border-red-500" : "focus:border-gray-800",
+                error ? "focus:border-red-500" : "focus:border-gray-800",
                 "[&:-webkit-autofill]:!border-gray-100 [&:-webkit-autofill]:text-md [&:-webkit-autofill]:shadow-[0_0_0_1000px_white_inset] [&:-webkit-autofill_focus]:!border-gray-800",
                 className,
               )}
+              value={value}
+              defaultValue={defaultValue}
               onChange={handleInputChange}
-              value={input.value}
-              aria-invalid={!!errorState.error}
+              aria-invalid={!!error}
               aria-describedby={getAriaDescribedby()}
               aria-required={required}
               {...props}
@@ -242,7 +243,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
         </div>
 
         {/* 에러 메시지 - 항상 인풋 아래에 표시 */}
-        {errorState.error && (
+        {error && (
           <p
             id={errorId}
             role="alert"
@@ -253,7 +254,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             )}
             style={{ animation: "fadeInDown 0.3s ease-out" }}
           >
-            {errorState.error}
+            {error}
           </p>
         )}
       </div>

@@ -15,7 +15,7 @@ const meta: Meta<typeof Input> = {
     docs: {
       description: {
         component:
-          "기본 텍스트 입력을 위한 컴포넌트입니다. 제어/비제어 모드를 모두 지원하며, 접근성을 고려한 설계로 다양한 사용자 경험을 제공합니다.",
+          "기본 텍스트 입력을 위한 컴포넌트입니다. react-hook-form과 호환되도록 설계되었으며, 접근성을 고려한 설계로 다양한 사용자 경험을 제공합니다.",
       },
     },
   },
@@ -52,7 +52,6 @@ const meta: Meta<typeof Input> = {
     },
     onChange: { action: "changed" },
     onClear: { action: "cleared" },
-    onErrorClear: { action: "error cleared" },
   },
 };
 
@@ -131,5 +130,48 @@ export const WithValue: Story = {
     label: "취미",
     value: "코딩",
     showClearButton: true,
+  },
+};
+
+/**
+ * react-hook-form과 함께 사용하는 예시입니다.
+ */
+export const WithReactHookForm: Story = {
+  render: () => {
+    // 예시 코드만 보여주기 위한 용도로, 실제 코드는 실행되지 않습니다.
+    return (
+      <div>
+        <h3 className="mb-4 text-lg font-bold">사용 예시 코드</h3>
+        <pre className="rounded bg-gray-100 p-4">
+          {`
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email("올바른 이메일 형식이 아닙니다")
+});
+
+function Form() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(schema)
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        {...register("email")}
+        label="이메일"
+        error={errors.email?.message}
+        required
+      />
+      <button type="submit">제출</button>
+    </form>
+  );
+}
+          `}
+        </pre>
+      </div>
+    );
   },
 };
